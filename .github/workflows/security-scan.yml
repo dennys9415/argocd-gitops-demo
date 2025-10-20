@@ -3,8 +3,8 @@ name: Security Scan
 on:
   push:
     branches: [ main ]
-  schedule:
-    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
+  #schedule:
+  #  - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
 
 jobs:
   kube-sec:
