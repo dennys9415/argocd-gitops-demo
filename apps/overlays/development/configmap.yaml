@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  environment: "development"
+  log_level: "debug"
+  feature_flags: "experimental=true,new_ui=false"

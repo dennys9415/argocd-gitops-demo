@@ -1,0 +1,53 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly on Monday at 6 AM
+
+jobs:
+  kube-sec:
+    name: Kubernetes Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run KubeSec
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-config-results.sarif'
+
+    - name: Upload KubeSec results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-config-results.sarif'
+
+  yaml-lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run YAML Lint
+      uses: ibiqlik/action-yamllint@v3
+      with:
+        file_or_dir: .
+        config_file: .yamllint.yml
+
+  kubeval:
+    name: Kubernetes Schema Validation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Validate Kubernetes schemas
+      uses: instrumenta/kubeval-action@master
+      with:
+        files: apps/ infrastructure/

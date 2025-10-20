@@ -1,0 +1,46 @@
+name: GitOps Sync
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  auto-sync:
+    name: Auto Sync Applications
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install ArgoCD CLI
+      run: |
+        curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+        sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+        rm argocd-linux-amd64
+
+    - name: Login to ArgoCD
+      run: |
+        argocd login ${{ secrets.ARGOCD_SERVER }} \
+          --username ${{ secrets.ARGOCD_USERNAME }} \
+          --password ${{ secrets.ARGOCD_PASSWORD }} \
+          --insecure
+
+    - name: Sync Out-of-Sync Applications
+      run: |
+        # Get out-of-sync applications
+        apps=$(argocd app list --output json | jq -r '.[] | select(.status.sync.status == "OutOfSync") | .metadata.name')
+        
+        for app in $apps; do
+          echo "Syncing application: $app"
+          argocd app sync $app --prune
+        done
+
+    - name: Report Status
+      run: |
+        echo "## GitOps Sync Status" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Application | Sync Status | Health Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------------|-------------|---------------|" >> $GITHUB_STEP_SUMMARY
+        
+        argocd app list --output json | jq -r '.[] | "| \(.metadata.name) | \(.status.sync.status) | \(.status.health.status) |"' >> $GITHUB_STEP_SUMMARY

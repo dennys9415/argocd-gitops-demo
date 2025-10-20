@@ -1,0 +1,42 @@
+# Kubernetes
+kubeconfig
+*.kubeconfig
+
+# Kind
+kind-*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local scripts
+.local/
+.venv/
+
+# Backup files
+*.bak
+*.backup
+
+# Helm
+**/charts/
+**/Chart.lock
+
+# Kustomize
+**/generated/
+
+# ArgoCD
+argocd-install/
